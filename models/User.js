@@ -6,13 +6,13 @@ const UserSchema = new Schema(
             type: String,
             trim: true,
             required: 'Username is required!',
-            unique: 'That username is taken!'
+            unique: true
         },
         email: {
             type: String,
             trim: true,
             required: 'Email is required!',
-            unique: 'This email already belongs to another account!',
+            unique: true,
             match: /\S+@\S+\.\S+/ //ensures valid email format
         },
         thoughts: [
@@ -30,8 +30,7 @@ const UserSchema = new Schema(
     },
     {
       toJSON: {
-        virtuals: true,
-        getters: true
+        virtuals: true
       },
       // prevents virtuals from creating duplicate of _id as `id`
       id: false
