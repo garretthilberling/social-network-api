@@ -35,13 +35,17 @@ app.get('/api/users', (req, res) => {
 // get single user
 app.get('/api/users/:id', ({ params, body }, res) => {
   User.findOne({ _id: params.id })
-  .then(dbUserData => res.json(dbUserData))
   .populate({
     path: 'thoughts',
     select: '-__v'
   })
+  .populate({
+    path: 'friends',
+    select: '-__v'
+  })
   .select('-__v')
   .sort({ _id: -1 })
+  .then(dbUserData => res.json(dbUserData))
   .catch(err => {
     console.error(err);
     res.sendStatus(400);
@@ -70,4 +74,96 @@ app.post('/api/users/:id', ({ params, body }, res) => {
     console.error(err);
     res.sendStatus(400);
   });
+});
+
+// add friend
+app.post('/api/users/:userId/friends/:friendId', ({ params, body }, res) => {
+    User.findOneAndUpdate(
+      { _id: params.userId }, 
+      { $push: { friends: params.friendId } },
+      { new: true }
+    )
+  .then(dbUserData => {
+    if (!dbUserData) {
+      res.status(404).json({ message: "No user found with this id!" });
+    }
+    res.json(dbUserData);
+  })
+  .catch(err => res.json(err));
+});
+
+// remove friend
+app.delete('/api/users/:userId/friends/:friendId', ({ params, body }, res) => {
+  User.findOneAndUpdate(
+    { _id: params.userId }, 
+    { $pull: { friends: params.friendId } },
+    { new: true }
+  )
+.then(dbUserData => {
+  if (!dbUserData) {
+    res.status(404).json({ message: "No user found with this id!" });
+  }
+  res.json(dbUserData);
+})
+.catch(err => res.json(err));
+});
+
+// get thoughts
+app.get('/api/thoughts', (req, res) => {
+  Thought.find({})
+  .then(dbThoughtData => res.json(dbThoughtData))
+  .catch(err => {
+    console.error(err);
+    res.sendStatus(400);
+  });
+});
+
+// get single thought
+app.get('/api/thought/:id', ({ params, body }, res) => {
+  User.findOne({ _id: params.id })
+  .then(dbThoughtData => res.json(dbThoughtData))
+  .catch(err => {
+    console.error(err);
+    res.sendStatus(400);
+  });
+});
+
+// create new thought
+app.post('/api/thoughts/:userId', ({ params, body }, res) => {
+  Thought.create(body) 
+  .then(({ _id }) => {
+    return User.findOneAndUpdate(
+      { _id: params.userId },
+      { $push: { thoughts: _id } },
+      { new: true }
+    );
+  })
+  .then(dbThoughtData => {
+    if(!dbThoughtData) {
+      res.status(404).json({ message: 'No thought found with this id!' });
+      return;
+    }
+    res.json(dbThoughtData);
+  })
+  .catch(err => console.error(err));
+});
+
+// delete thought
+app.delete('/api/thoughts/:userId/:thoughtId', ({ params }, res) => {
+  Thought.findOneAndDelete({ _id: params.thoughtId }) 
+  .then(({ _id }) => {
+    return User.findOneAndUpdate(
+      { _id: params.userId },
+      { $pull: { thoughts: _id } }, // also removes from thought array in the user model
+      { new: true }
+    );
+  })
+  .then(dbThoughtData => {
+    if(!dbThoughtData) {
+      res.status(404).json({ message: 'No thought found with this id!' });
+      return;
+    }
+    res.json(dbThoughtData);
+  })
+  .catch(err => console.error(err));
 });
