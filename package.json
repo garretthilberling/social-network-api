@@ -1,0 +1,25 @@
+{
+  "scripts": {
+    "start": "node server.js",
+    "listen": "nodemon server.js"
+  },
+  "name": "social-network-api",
+  "description": "",
+  "version": "1.0.0",
+  "main": "server.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/garretthilberling/social-network-api.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/garretthilberling/social-network-api/issues"
+  },
+  "homepage": "https://github.com/garretthilberling/social-network-api#readme",
+  "dependencies": {
+    "date-and-time": "^2.3.1",
+    "express": "^4.17.3",
+    "mongoose": "^6.3.1"
+  }
+}
