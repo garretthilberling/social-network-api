@@ -10,7 +10,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/social-network-api-test1', {
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/social-network-api-final', {
   useNewUrlParser: true,
   useUnifiedTopology: true
 });
@@ -173,7 +173,7 @@ app.post('/api/thoughts/:userId', ({ params, body }, res) => {
 });
 
 // delete thought
-app.delete('/api/thoughts/:userId/:thoughtId', ({ params }, res) => {
+app.delete('/api/thoughts/:thoughtId', ({ params }, res) => {
   Thought.findOneAndDelete({ _id: params.thoughtId }) 
   .then(({ _id }) => {
     return User.findOneAndUpdate(
@@ -193,8 +193,8 @@ app.delete('/api/thoughts/:userId/:thoughtId', ({ params }, res) => {
 });
 
 // update thought
-app.put('/api/thoughts/:id', ({ params, body }, res) => {
-  Thought.findOneAndUpdate({ _id: params.id }, body, { new: true })
+app.put('/api/thoughts/:thoughtId', ({ params, body }, res) => {
+  Thought.findOneAndUpdate({ _id: params.thoughtId }, body, { new: true })
   .then(dbThoughtData => {
     if(!dbThoughtData) {
       res.status(404).json({ message: 'No thought found with this id!' });
