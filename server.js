@@ -67,7 +67,7 @@ app.delete('/api/users/:id', ({ params }, res) => {
 });
 
 // update user
-app.post('/api/users/:id', ({ params, body }, res) => {
+app.put('/api/users/:id', ({ params, body }, res) => {
   User.findOneAndUpdate({ _id: params.id }, body, { new: true })
   .then(dbUserData => res.json(dbUserData))
   .catch(err => {
@@ -121,6 +121,12 @@ app.get('/api/thoughts', (req, res) => {
 // get single thought
 app.get('/api/thought/:id', ({ params, body }, res) => {
   User.findOne({ _id: params.id })
+  .populate({
+    path: 'reactions',
+    select: '-__v'
+  })
+  .select('-__v')
+  .sort({ _id: -1 })
   .then(dbThoughtData => res.json(dbThoughtData))
   .catch(err => {
     console.error(err);
@@ -167,3 +173,22 @@ app.delete('/api/thoughts/:userId/:thoughtId', ({ params }, res) => {
   })
   .catch(err => console.error(err));
 });
+
+// update thought
+app.put('/api/thoughts/:id', ({ params, body }, res) => {
+  Thought.findOneAndUpdate({ _id: params.id }, body, { new: true })
+  .then(dbThoughtData => {
+    if(!dbThoughtData) {
+      res.status(404).json({ message: 'No thought found with this id!' });
+      return;
+    }
+    res.json(dbThoughtData);
+  })
+  .catch(err => {
+    console.error(err);
+    res.sendStatus(400);
+  });
+});
+
+// create reaction
+app.post
