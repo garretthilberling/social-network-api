@@ -10,15 +10,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/pizza-hunt', {
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/social-network-api-test1', {
   useNewUrlParser: true,
   useUnifiedTopology: true
 });
 
 // Use this to log mongo queries being executed!
 mongoose.set('debug', true);
-
-// app.use(require('./routes'));
 
 app.listen(PORT, () => console.log(`🌍 Connected on localhost:${PORT}`));
 
@@ -61,7 +59,9 @@ app.post('/api/users', ({ body }, res) => {
 
 // delete user
 app.delete('/api/users/:id', ({ params }, res) => {
-  User.findOneAndDelete({ _id: params.id })
+  const promise1 = User.findOneAndDelete({ _id: params.id });
+  const promise2 = Thought.deleteMany({ userId: { $in: params.id } }); // deletes all associated thoughts
+  Promise.all([promise1, promise2])
   .then(dbUserData => res.json(dbUserData))
   .catch(err => res.json(err));
 });
@@ -152,7 +152,9 @@ app.get('/api/thoughts/:id', ({ params, body }, res) => {
 
 // create new thought
 app.post('/api/thoughts/:userId', ({ params, body }, res) => {
-  Thought.create(body) 
+  const promise1 = Thought.create(body);
+  const promise2 = Thought.findOneAndUpdate({ username: body.username }, { userId: params.userId }, { new: true }); // here we assign the userId field as the userId specified in the endpoint. this is so thoughts can be deleted when associated users are
+  Promise.all([promise1, promise2])
   .then(({ _id }) => {
     return User.findOneAndUpdate(
       { _id: params.userId },
@@ -162,7 +164,7 @@ app.post('/api/thoughts/:userId', ({ params, body }, res) => {
   })
   .then(dbThoughtData => {
     if(!dbThoughtData) {
-      res.status(404).json({ message: 'No thought found with this id!' });
+      res.status(404).json({ message: 'No user found with this id!' });
       return;
     }
     res.json(dbThoughtData);
