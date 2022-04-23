@@ -78,11 +78,19 @@ app.put('/api/users/:id', ({ params, body }, res) => {
 
 // add friend
 app.post('/api/users/:userId/friends/:friendId', ({ params, body }, res) => {
-    User.findOneAndUpdate(
-      { _id: params.userId }, 
-      { $push: { friends: params.friendId } },
-      { new: true }
-    )
+  const promise1 = User.findOneAndUpdate(
+    { _id: params.userId }, 
+    { $push: { friends: params.friendId } },
+    { new: true }
+  );
+  
+  const promise2 = User.findOneAndUpdate(
+    { _id: params.friendId }, 
+    { $push: { friends: params.userId } },
+    { new: true }
+  );
+
+  Promise.all([promise1, promise2]) // updates friends array for both users
   .then(dbUserData => {
     if (!dbUserData) {
       res.status(404).json({ message: "No user found with this id!" });
@@ -94,11 +102,19 @@ app.post('/api/users/:userId/friends/:friendId', ({ params, body }, res) => {
 
 // remove friend
 app.delete('/api/users/:userId/friends/:friendId', ({ params, body }, res) => {
-  User.findOneAndUpdate(
+  const promise1 = User.findOneAndUpdate(
     { _id: params.userId }, 
     { $pull: { friends: params.friendId } },
     { new: true }
-  )
+  );
+  
+  const promise2 = User.findOneAndUpdate(
+    { _id: params.friendId }, 
+    { $pull: { friends: params.userId } },
+    { new: true }
+  );
+
+Promise.all([promise1, promise2]) // updates friends array for both users
 .then(dbUserData => {
   if (!dbUserData) {
     res.status(404).json({ message: "No user found with this id!" });
