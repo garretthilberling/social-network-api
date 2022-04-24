@@ -68,7 +68,7 @@ app.delete('/api/users/:id', async ({ params }, res) => {
 
 // update user
 app.put('/api/users/:id', ({ params, body }, res) => {
-  User.findOneAndUpdate({ _id: params.id }, body, { new: true })
+  User.findOneAndUpdate({ _id: params.id }, body, { new: true, runValidators: true })
   .then(dbUserData => res.json(dbUserData))
   .catch(err => {
     console.error(err);
@@ -202,7 +202,7 @@ app.delete('/api/thoughts/:userId/:thoughtId', ({ params }, res) => {
 
 // update thought
 app.put('/api/thoughts/:thoughtId', ({ params, body }, res) => {
-  Thought.findOneAndUpdate({ _id: params.thoughtId }, body, { new: true })
+  Thought.findOneAndUpdate({ _id: params.thoughtId }, body, { new: true, runValidators: true })
   .then(dbThoughtData => {
     if(!dbThoughtData) {
       res.status(404).json({ message: 'No thought found with this id!' });
