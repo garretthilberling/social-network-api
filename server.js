@@ -10,7 +10,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/social-network-api-final', {
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/social-network-api-final9', {
   useNewUrlParser: true,
   useUnifiedTopology: true
 });
@@ -58,9 +58,9 @@ app.post('/api/users', ({ body }, res) => {
 });
 
 // delete user
-app.delete('/api/users/:id', ({ params }, res) => {
-  const promise1 = User.findOneAndDelete({ _id: params.id });
-  const promise2 = Thought.deleteMany({ userId: { $in: params.id } }); // deletes all associated thoughts
+app.delete('/api/users/:id', async ({ params }, res) => {
+  const promise1 = await User.findOneAndDelete({ _id: params.id });
+  const promise2 = await Thought.deleteMany({ userId: { $in: params.id } }); // deletes all associated thoughts
   Promise.all([promise1, promise2])
   .then(dbUserData => res.json(dbUserData))
   .catch(err => res.json(err));
@@ -77,14 +77,14 @@ app.put('/api/users/:id', ({ params, body }, res) => {
 });
 
 // add friend
-app.post('/api/users/:userId/friends/:friendId', ({ params, body }, res) => {
-  const promise1 = User.findOneAndUpdate(
+app.post('/api/users/:userId/friends/:friendId', async ({ params, body }, res) => {
+  const promise1 = await User.findOneAndUpdate(
     { _id: params.userId }, 
     { $push: { friends: params.friendId } },
     { new: true }
   );
   
-  const promise2 = User.findOneAndUpdate(
+  const promise2 = await User.findOneAndUpdate(
     { _id: params.friendId }, 
     { $push: { friends: params.userId } },
     { new: true }
@@ -101,14 +101,14 @@ app.post('/api/users/:userId/friends/:friendId', ({ params, body }, res) => {
 });
 
 // remove friend
-app.delete('/api/users/:userId/friends/:friendId', ({ params, body }, res) => {
-  const promise1 = User.findOneAndUpdate(
+app.delete('/api/users/:userId/friends/:friendId', async ({ params, body }, res) => {
+  const promise1 = await User.findOneAndUpdate(
     { _id: params.userId }, 
     { $pull: { friends: params.friendId } },
     { new: true }
   );
   
-  const promise2 = User.findOneAndUpdate(
+  const promise2 = await User.findOneAndUpdate(
     { _id: params.friendId }, 
     { $pull: { friends: params.userId } },
     { new: true }
@@ -151,17 +151,24 @@ app.get('/api/thoughts/:id', ({ params, body }, res) => {
 });
 
 // create new thought
-app.post('/api/thoughts/:userId', ({ params, body }, res) => {
-  const promise1 = Thought.create(body);
-  const promise2 = Thought.findOneAndUpdate({ username: body.username }, { userId: params.userId }, { new: true }); // here we assign the userId field as the userId specified in the endpoint. this is so thoughts can be deleted when associated users are
+app.post('/api/thoughts/:userId', async ({ params, body }, res) => {
+  let id;
+  const promise1 = await Thought.create(body)
+                    .then(({ _id }) => {
+                      id = _id; // moves id up in scope to be used with second promise
+                          return User.findOneAndUpdate(
+                            { _id: params.userId },
+                            { $push: { thoughts: _id } },
+                            { new: true }
+                          );
+                        });
+  const promise2 = await Thought.findOneAndUpdate({ _id: id }, { userId: params.userId }, { new: true })
+  .then(() => {
+    if(!id) {
+      console.error('Something went wrong');
+    }
+  }); // here we assign the userId field as the userId specified in the endpoint. this is so thoughts can be deleted when associated users are
   Promise.all([promise1, promise2])
-  .then(({ _id }) => {
-    return User.findOneAndUpdate(
-      { _id: params.userId },
-      { $push: { thoughts: _id } },
-      { new: true }
-    );
-  })
   .then(dbThoughtData => {
     if(!dbThoughtData) {
       res.status(404).json({ message: 'No user found with this id!' });
@@ -173,7 +180,7 @@ app.post('/api/thoughts/:userId', ({ params, body }, res) => {
 });
 
 // delete thought
-app.delete('/api/thoughts/:thoughtId', ({ params }, res) => {
+app.delete('/api/thoughts/:userId/:thoughtId', ({ params }, res) => {
   Thought.findOneAndDelete({ _id: params.thoughtId }) 
   .then(({ _id }) => {
     return User.findOneAndUpdate(
