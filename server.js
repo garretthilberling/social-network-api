@@ -10,7 +10,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/social-network-api-final9', {
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/social-network-api', {
   useNewUrlParser: true,
   useUnifiedTopology: true
 });
@@ -154,20 +154,21 @@ app.get('/api/thoughts/:id', ({ params, body }, res) => {
 app.post('/api/thoughts/:userId', async ({ params, body }, res) => {
   let id;
   const promise1 = await Thought.create(body)
-                    .then(({ _id }) => {
-                      id = _id; // moves id up in scope to be used with second promise
-                          return User.findOneAndUpdate(
-                            { _id: params.userId },
-                            { $push: { thoughts: _id } },
-                            { new: true }
-                          );
-                        });
-  const promise2 = await Thought.findOneAndUpdate({ _id: id }, { userId: params.userId }, { new: true })
-  .then(() => {
-    if(!id) {
-      console.error('Something went wrong');
-    }
-  }); // here we assign the userId field as the userId specified in the endpoint. this is so thoughts can be deleted when associated users are
+  .then(({ _id }) => {
+    id = _id; // moves id up in scope to be used in second promise
+    return User.findOneAndUpdate(
+      { _id: params.userId },
+      { $push: { thoughts: _id } },
+      { new: true }
+    );
+  });
+
+  const promise2 = await Thought.findOneAndUpdate(
+    { _id: id }, 
+    { userId: params.userId }, 
+    { new: true }
+    ); // here we assign the userId field as the userId specified in the endpoint. 
+      // this is so when a user is deleted all associated thoughts are as well
   Promise.all([promise1, promise2])
   .then(dbThoughtData => {
     if(!dbThoughtData) {

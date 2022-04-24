@@ -46,7 +46,8 @@ const ThoughtSchema = new Schema(
         },
         username: {
             type: String,
-            required: "Please enter your username!"
+            required: "Please enter your username!",
+            trim: true
         },
         userId: {
             type: String
