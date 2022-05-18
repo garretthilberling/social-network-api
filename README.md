@@ -8,7 +8,7 @@
 * [Credits](#Credits)
 
 ## Description
-Social🧑‍🤝‍🧑Network🤖API is a simple API built to be used as the backend for a social network website. The languages and technologies used to build this application are: JavaScript ES6+, MongoDB, & Mongoose.
+Social🧑‍🤝‍🧑Network🤖API is a simple API built to be used as the backend for a social network website. The languages and technologies used to build this application are: JavaScript ES6+, Node.js, MongoDB, & Mongoose.
 
 ## Usage
 Create a user, add a user as a friend, share your thoughts, & react to the thoughts of other users! See this video tutorial for an in-depth look into what you can do with the API:
