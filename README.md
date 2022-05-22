@@ -13,11 +13,13 @@ Social🧑‍🤝‍🧑Network🤖API is a simple API built to be used as the b
 ## Usage
 Create a user, add a user as a friend, share your thoughts, & react to the thoughts of other users! See this video tutorial for an in-depth look into what you can do with the API:
 
-<p align="center">
-    <a href="https://drive.google.com/file/d/1_83qfodI__a5Vg0wvUlAc6PvUfXCkdk4/view">
+<div align="center">
         <img alt="gif demonstration" src="./public/img/gif-demonstration.gif" width="700" />
-    </a>
-<p>
+        <br></br>
+        <div>For the full video including audio follow <a href="https://drive.google.com/file/d/1_83qfodI__a5Vg0wvUlAc6PvUfXCkdk4/view">
+            this link
+        </a></div>
+</div>
 
 ## Installation
 In order to use this API you must clone this repository to your machine. 
